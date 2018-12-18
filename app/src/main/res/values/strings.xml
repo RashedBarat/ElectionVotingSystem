@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Election Voting System</string>
+    <string name="hometitle">Election Voting System</string>
+    <string name="loginbtntext">Login</string>
+    <string name="homeregbtntext">Register</string>
+    <string name="registernote">NOTE: Please Remember to include your country code in other to receive OTP</string>
+    <string name="regsubmit">Submit</string>
+    <string name="reginttext">Enter Your Mobile Number</string>
+    <string name="reglogbtn">Already have an Account? Click here</string>
+    <string name="otpverify">Enter your OTP</string>
+    <string name="otp">Verify</string>
+    <string name="verifyauth">Enter Your National ID</string>
+    <string name="profilesetup">Account Setup</string>
+    <string name="setuphintname">Enter Your Fullname</string>
+    <string name="setuphintid">Enter Your National ID</string>
+    <string name="password_hint">Enter Your Password</string>
+    <string name="setuphint">Enter your Address</string>
+    <string name="authbtn">Authenticate</string>
+    <string name="textwaiting">Loading...</string>
+    <string name="maincastbtn">Cast Your Vote</string>
+    <string name="partydetails">Party Details:</string>
+    <string name="partyname">Enter Party Name</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="election_ended">Election Ended!</string>
+
+</resources>

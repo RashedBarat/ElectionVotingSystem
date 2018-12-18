@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.barat.electionvotingsystem.Create_CandidateActivity">
+
+    <Button
+        android:id="@+id/candsubmite"
+        android:layout_width="0dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/colorPrimary"
+        android:text="@string/regsubmit"
+        android:textAlignment="center"
+        android:textColor="@android:color/background_light"
+        android:textStyle="bold"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/candspeech" />
+
+    <EditText
+        android:id="@+id/partyname"
+        android:layout_width="0dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="28dp"
+        android:ems="10"
+        android:hint="Enter Party Name"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <EditText
+        android:id="@+id/candname_result"
+        android:layout_width="0dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="12dp"
+        android:ems="10"
+        android:hint="Enter Candidate Name"
+        android:inputType="textPersonName"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/candimg" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="249dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:text="Party Details:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/create_pro" />
+
+    <ProgressBar
+        android:id="@+id/create_pro"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="11dp"
+        android:indeterminate="true"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="24dp"
+        android:text="Candidate Details:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/partyname" />
+
+    <ImageView
+        android:id="@+id/candimg"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
+
+    <EditText
+        android:id="@+id/candspeech"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="12dp"
+        android:ems="10"
+        android:hint="Enter Candidate Manifesto"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/candpost" />
+
+    <Spinner
+        android:id="@+id/candpost"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="140dp"
+
+        android:background="@color/colorAccent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

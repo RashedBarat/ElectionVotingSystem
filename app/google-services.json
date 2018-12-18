@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "606916697906",
+    "firebase_url": "https://electionvotingsystem-9d45e.firebaseio.com",
+    "project_id": "electionvotingsystem-9d45e",
+    "storage_bucket": "electionvotingsystem-9d45e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:606916697906:android:92ac7238d6580dbb",
+        "android_client_info": {
+          "package_name": "com.barat.electionvotingsystem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "606916697906-1d0iba249taibtqbc0ng743qsnk8squo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.barat.electionvotingsystem",
+            "certificate_hash": "b41798adc0660f917c6050f6577b8d6709b05e45"
+          }
+        },
+        {
+          "client_id": "606916697906-5dlfm9dlpp8hbnqf4lo99th21j87v1cc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.barat.electionvotingsystem",
+            "certificate_hash": "01a6ada0152fd473b9fda0d87f7383f4f671c09a"
+          }
+        },
+        {
+          "client_id": "606916697906-63up4duhqf4mp12fmica9hgf91mcqgnr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKqoWZ-pLPUqoNHRhV6Z0c3kICZW9UUIk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "606916697906-63up4duhqf4mp12fmica9hgf91mcqgnr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
