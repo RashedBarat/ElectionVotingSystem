@@ -3,7 +3,8 @@
     <string name="hometitle">Election Voting System</string>
     <string name="loginbtntext">Login</string>
     <string name="homeregbtntext">Register</string>
-    <string name="registernote">NOTE: Please Remember to include your country code in other to receive OTP</string>
+    <string name="registernote">NOTE: Please include your country code in order to receive OTP</string>
+    <string name="setup_note">NOTE: Please use an alpha numeric password for better security</string>
     <string name="regsubmit">Submit</string>
     <string name="reginttext">Enter Your Mobile Number</string>
     <string name="reglogbtn">Already have an Account? Click here</string>
@@ -13,6 +14,7 @@
     <string name="profilesetup">Account Setup</string>
     <string name="setuphintname">Enter Your Fullname</string>
     <string name="setuphintid">Enter Your National ID</string>
+    <string name="hint_student_id">Enter Your Student ID</string>
     <string name="password_hint">Enter Your Password</string>
     <string name="setuphint">Enter your Address</string>
     <string name="authbtn">Authenticate</string>

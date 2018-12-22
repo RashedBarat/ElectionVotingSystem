@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +36,9 @@ public class AuthActivity extends AppCompatActivity {
 
 
     private Button mVotebtns;
-    private TextView mVoteauthtxt;
+    ProgressBar mProgressBar;
+    private TextView mNationalId;
+    private TextView mStudentId;
     private TextView mPassword;
 
     private String currentUser_id;
@@ -56,24 +59,27 @@ public class AuthActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mVotebtns = (Button) findViewById(R.id.votebtns);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mVotebtns = findViewById(R.id.votebtns);
+        mProgressBar = findViewById(R.id.authpro);
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
         currentUser_id = mAuth.getCurrentUser().getUid();
 
-        mVoteauthtxt = findViewById(R.id.voteauthtxt);
+        mNationalId = findViewById(R.id.national_id);
+        mStudentId = findViewById(R.id.student_id);
+
         mPassword = findViewById(R.id.password);
         mcou = findViewById(R.id.cou);
-
 
         firebaseFirestore.collection("ElectionDate").document("B7Aza6M4nVPytBpS05jQ").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-
 
                 if (task.isSuccessful()) {
 
@@ -117,58 +123,59 @@ public class AuthActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                final String password = mPassword.getText().toString().trim();
+                final String nationalid = mNationalId.getText().toString().trim();
+                final String studentid = mStudentId.getText().toString().trim();
 
-                firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (!password.isEmpty() && !nationalid.isEmpty() && !studentid.isEmpty()) {
+                    mProgressBar.setVisibility(View.VISIBLE);
 
-                        String password = mPassword.getText().toString().trim();
+                    firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                        if (task.isSuccessful()) {
+                            if (task.isSuccessful()) {
+                                if (task.getResult().exists()) {
 
-                            if (task.getResult().exists()) {
+                                    if (task.getResult().getString("Password").equals(password)
+                                            && task.getResult().getString("National").equals(nationalid)
+                                            && task.getResult().getString("StudentId").equals(studentid)) {
 
-                                if (task.getResult().getString("Password").equals(password)) {
+                                        String finish = task.getResult().getString("Finish");
+                                        if (finish == null) {
+                                            Intent main = new Intent(AuthActivity.this, Candidate_List_Activity.class);
 
-                                    String finish = task.getResult().getString("Finish");
+                                            startActivity(main);
+                                            finish();
 
-                                    if (finish == null) {
+                                        } else if (finish.equals("Voted")) {
+                                            Toast.makeText(AuthActivity.this, "You already finish your Vote", Toast.LENGTH_SHORT).show();
+                                            showElectionResult();
+                                        }
 
-                                        Intent main = new Intent(AuthActivity.this, Candidate_List_Activity.class);
-                                        startActivity(main);
-                                        finish();
-
-                                    } else if (finish.equals("Voted")) {
-
-                                        Toast.makeText(AuthActivity.this, "You already finish your Vote", Toast.LENGTH_SHORT).show();
-
-                                        showElectionResult();
-
+                                    } else {
+                                        mProgressBar.setVisibility(View.INVISIBLE);
+                                        Toast.makeText(AuthActivity.this, "Incorrect credentials, it does not match with our database", Toast.LENGTH_LONG).show();
                                     }
 
                                 } else {
-
-                                    Toast.makeText(AuthActivity.this, "Incorrect password, it does not match with our database", Toast.LENGTH_LONG).show();
-
+                                    mProgressBar.setVisibility(View.INVISIBLE);
+                                    Toast.makeText(AuthActivity.this, "Data does not exit", Toast.LENGTH_LONG).show();
                                 }
 
-
                             } else {
-
-                                Toast.makeText(AuthActivity.this, "Data does not exit", Toast.LENGTH_LONG).show();
+                                mProgressBar.setVisibility(View.INVISIBLE);
+                                String error = task.getException().getMessage();
+                                Toast.makeText(AuthActivity.this, "Retriving Error" + error, Toast.LENGTH_SHORT).show();
                             }
-
-                        } else {
-
-                            String error = task.getException().getMessage();
-                            Toast.makeText(AuthActivity.this, "Retriving Error" + error, Toast.LENGTH_SHORT).show();
                         }
-                    }
-                });
+                    });
+
+                } else {
+                    Toast.makeText(AuthActivity.this, "Enter valid credentials!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
-
-
     }
 
     // countdowntimer is an abstract class, so extend it and fill in methods
@@ -196,7 +203,8 @@ public class AuthActivity extends AppCompatActivity {
     private void showVotingOptions() {
 
         mVotebtns.setVisibility(View.VISIBLE);
-        mVoteauthtxt.setVisibility(View.VISIBLE);
+        mNationalId.setVisibility(View.VISIBLE);
+        mStudentId.setVisibility(View.VISIBLE);
         mPassword.setVisibility(View.VISIBLE);
     }
 

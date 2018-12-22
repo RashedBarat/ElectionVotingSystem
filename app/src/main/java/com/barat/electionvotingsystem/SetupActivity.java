@@ -41,6 +41,7 @@ public class SetupActivity extends AppCompatActivity {
     private CircleImageView mSelect_image;
     private EditText mFullname;
     private EditText mNationId;
+    private EditText mStudentId;
     private EditText mAddress;
     private EditText mPassword;
     private RadioGroup mGender;
@@ -67,83 +68,102 @@ public class SetupActivity extends AppCompatActivity {
 
         storageReference = FirebaseStorage.getInstance().getReference();
 
-        mSetup_Save = (Button) findViewById(R.id.save_changes);
-        mFullname = (EditText) findViewById(R.id.fullname);
-        mNationId = (EditText) findViewById(R.id.nationalid);
-        mPassword = (EditText) findViewById(R.id.password);
-        mAddress = (EditText) findViewById(R.id.address);
-        mGender = (RadioGroup) findViewById(R.id.gender);
+        mSetup_Save = findViewById(R.id.save_changes);
+        mFullname = findViewById(R.id.fullname);
+        mNationId = findViewById(R.id.nationalid);
+        mStudentId = findViewById(R.id.student_id);
+        mPassword = findViewById(R.id.password);
+        mAddress = findViewById(R.id.address);
+        mGender = findViewById(R.id.gender);
 
 
-        mSetprogress = (ProgressBar) findViewById(R.id.setup_progress);
-        mSelect_image = (CircleImageView) findViewById(R.id.select_image);
+        mSetprogress = findViewById(R.id.setup_progress);
+        mSelect_image = findViewById(R.id.select_image);
 
 
         mSetup_Save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                final String fullname = mFullname.getText().toString();
-                final String national = mNationId.getText().toString();
-                final String password = mPassword.getText().toString();
-                final String address = mAddress.getText().toString();
+                final String fullname = mFullname.getText().toString().trim();
+                final String national = mNationId.getText().toString().trim();
+                final String password = mPassword.getText().toString().trim();
+                final String address = mAddress.getText().toString().trim();
+                final String studentid = mStudentId.getText().toString().trim();
                 int radioId = mGender.getCheckedRadioButtonId();
                 radioButton = findViewById(radioId);
 
-
                 if (!TextUtils.isEmpty(fullname) && !TextUtils.isEmpty(national)
-                        && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(address) && mainImageUrl != null) {
+                        && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(address) && !TextUtils.isEmpty(studentid) && mainImageUrl != null) {
 
                     mSetprogress.setVisibility(View.VISIBLE);
-                    final String user_id = firebaseAuth.getCurrentUser().getUid();
 
-                    StorageReference image_path = storageReference.child("profile_image").child(user_id + ".jpg");
-                    image_path.putFile(mainImageUrl).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    firebaseFirestore.collection("StudentIDs").document(studentid).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
                             if (task.isSuccessful()) {
 
-                                Uri download_uri = task.getResult().getDownloadUrl();
+                                if (task.getResult().exists()) {
 
-                                Map<String, String> userMap = new HashMap<>();
-                                userMap.put("Fullname", fullname);
-                                userMap.put("Gender", radioButton.getText().toString());
-                                userMap.put("National", national);
-                                userMap.put("Password", password);
-                                userMap.put("Address", address);
-                                userMap.put("Images", download_uri.toString());
+                                    final String user_id = firebaseAuth.getCurrentUser().getUid();
 
-                                firebaseFirestore.collection("Users").document(user_id).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
+                                    StorageReference image_path = storageReference.child("profile_image").child(user_id + ".jpg");
+                                    image_path.putFile(mainImageUrl).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
-                                        if (task.isSuccessful()) {
+                                            if (task.isSuccessful()) {
 
-                                            Toast.makeText(SetupActivity.this, "User Successully Created", Toast.LENGTH_LONG).show();
-                                            Intent main = new Intent(SetupActivity.this, MainActivity.class);
-                                            startActivity(main);
+                                                Uri download_uri = task.getResult().getDownloadUrl();
 
-                                        } else {
+                                                Map<String, String> userMap = new HashMap<>();
+                                                userMap.put("Fullname", fullname);
+                                                userMap.put("Gender", radioButton.getText().toString());
+                                                userMap.put("National", national);
+                                                userMap.put("StudentId", studentid);
+                                                userMap.put("Password", password);
+                                                userMap.put("Address", address);
+                                                userMap.put("Images", download_uri.toString());
 
-                                            String errorimage = task.getException().getMessage();
-                                            Toast.makeText(SetupActivity.this, "FireStore Error" + errorimage, Toast.LENGTH_LONG).show();
+                                                firebaseFirestore.collection("Users").document(user_id).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
 
+                                                        if (task.isSuccessful()) {
+
+                                                            Toast.makeText(SetupActivity.this, "User Successfully Created", Toast.LENGTH_LONG).show();
+                                                            Intent main = new Intent(SetupActivity.this, MainActivity.class);
+                                                            startActivity(main);
+
+                                                        } else {
+                                                            mSetprogress.setVisibility(View.INVISIBLE);
+                                                            String errorimage = task.getException().getMessage();
+                                                            Toast.makeText(SetupActivity.this, "FireStore Error" + errorimage, Toast.LENGTH_LONG).show();
+                                                        }
+
+                                                    }
+                                                });
+
+//                                                Toast.makeText(SetupActivity.this, "Image is successfully uploaded", Toast.LENGTH_SHORT).show();
+
+                                            } else {
+                                                mSetprogress.setVisibility(View.INVISIBLE);
+                                                String error = task.getException().getMessage();
+                                                Toast.makeText(SetupActivity.this, "Image Upload Error " + error, Toast.LENGTH_LONG).show();
+                                            }
                                         }
+                                    });
 
-                                        mSetprogress.setVisibility(View.INVISIBLE);
-                                    }
-                                });
-
-                                Toast.makeText(SetupActivity.this, "Image is successfully uploaded", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    mSetprogress.setVisibility(View.INVISIBLE);
+                                    Toast.makeText(SetupActivity.this, "Your student ID is not enlisted in our database, you cannot proceed further!", Toast.LENGTH_LONG).show();
+                                }
 
                             } else {
-                                String error = task.getException().getMessage();
-                                Toast.makeText(SetupActivity.this, "Image Upload Error " + error, Toast.LENGTH_LONG).show();
                                 mSetprogress.setVisibility(View.INVISIBLE);
-
+                                Toast.makeText(SetupActivity.this, "Something went wrong try again!", Toast.LENGTH_SHORT).show();
                             }
-
                         }
                     });
 

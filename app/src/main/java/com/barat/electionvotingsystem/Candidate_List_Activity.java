@@ -32,7 +32,9 @@ public class Candidate_List_Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_candidate__list_);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         homeFragment = new HomeFragment();
@@ -50,36 +52,33 @@ public class Candidate_List_Activity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-            if (task.isSuccessful()){
+                if (task.isSuccessful()) {
 
-                if (task.getResult().exists()) {
+                    if (task.getResult().exists()) {
 
-                    String  finish = task.getResult().getString("Finish");
+                        String finish = task.getResult().getString("Finish");
 
-                    if (finish == null) {
+                        if (finish == null) {
 
-                        voteFinish();
+                            voteFinish();
 
 
-                    }else{
+                        } else {
 
-                        mVotefinish.setVisibility(View.INVISIBLE);
+                            mVotefinish.setVisibility(View.INVISIBLE);
+                        }
+
                     }
 
                 }
 
             }
-
-            }
         });
-
-
-
 
     }
 
 
-    public void voteFinish(){
+    public void voteFinish() {
         mVotefinish.setVisibility(View.VISIBLE);
 
         mVotefinish.setOnClickListener(new View.OnClickListener() {
@@ -125,11 +124,11 @@ public class Candidate_List_Activity extends AppCompatActivity {
                 });
 
 
-
             }
         });
     }
-    private void replaceFragment(Fragment fragment){
+
+    private void replaceFragment(Fragment fragment) {
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.main_layout, fragment);

@@ -79,32 +79,42 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (btnType == 0) {
-                    mRegprocess.setVisibility(View.VISIBLE);
-                    mregphonetxt.setEnabled(false);
-                    mReg_btn.setEnabled(false);
+                    String phonenum = mregphonetxt.getText().toString().trim();
 
-                    String phonenum = mregphonetxt.getText().toString();
+                    if (!phonenum.isEmpty()) {
+                        mRegprocess.setVisibility(View.VISIBLE);
 
-                    PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                        mregphonetxt.setEnabled(false);
+                        mReg_btn.setEnabled(false);
 
-                            phonenum,
+                        PhoneAuthProvider.getInstance().verifyPhoneNumber(
 
-                            60,
-                            TimeUnit.SECONDS,
-                            RegisterActivity.this,
-                            mCallbacks
+                                phonenum,
 
-                    );
-                }else {
+                                60,
+                                TimeUnit.SECONDS,
+                                RegisterActivity.this,
+                                mCallbacks
 
-                    mReg_btn.setEnabled(false);
-                    mVerifypanel.setVisibility(View.VISIBLE);
+                        );
 
-                    String verification = mCodeText.getText().toString();
-                    PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, verification);
-                    signInWithPhoneAuthCredential(credential);
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "Please enter a valid number!", Toast.LENGTH_SHORT).show();
+                    }
 
+                } else {
+                    String verification = mCodeText.getText().toString().trim();
 
+                    if (!verification.isEmpty()) {
+                        mReg_btn.setEnabled(false);
+                        mVerifypanel.setVisibility(View.VISIBLE);
+
+                        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, verification);
+                        signInWithPhoneAuthCredential(credential);
+
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "Please enter a valid OTP!", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -125,7 +135,6 @@ public class RegisterActivity extends AppCompatActivity {
                 mReg_btn.setEnabled(true);
                 Toast.makeText(RegisterActivity.this, "Invalid number", Toast.LENGTH_LONG).show();
             }
-
 
 
             @Override
@@ -178,7 +187,7 @@ public class RegisterActivity extends AppCompatActivity {
                             mRegprocess.setVisibility(View.INVISIBLE);
                             mregphonetxt.setEnabled(true);
                             mReg_btn.setEnabled(true);
-                            Toast.makeText(RegisterActivity.this, "invalid OTP", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RegisterActivity.this, "Invalid OTP", Toast.LENGTH_SHORT).show();
 
                             if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                                 // The verification code entered was invalid

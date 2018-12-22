@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "606916697906-5upp0vol0137qmh6gsts7gqd0031o39e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.barat.electionvotingsystem",
+            "certificate_hash": "166e864921e36d88e4c14e48d58e31b7592f1f4a"
+          }
+        },
+        {
           "client_id": "606916697906-63up4duhqf4mp12fmica9hgf91mcqgnr.apps.googleusercontent.com",
           "client_type": 3
         }
