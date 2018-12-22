@@ -1,15 +1,16 @@
 package com.barat.electionvotingsystem;
 
-import android.*;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -38,10 +39,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SetupActivity extends AppCompatActivity {
 
+    public static final String EXTRA_ID = "EXTRA_ID";
+    public static final String EXTRA_PHONE = "EXTRA_PHONE";
+
     private CircleImageView mSelect_image;
     private EditText mFullname;
     private EditText mNationId;
-    private EditText mStudentId;
     private EditText mAddress;
     private EditText mPassword;
     private RadioGroup mGender;
@@ -53,25 +56,26 @@ public class SetupActivity extends AppCompatActivity {
 
     private Uri mainImageUrl = null;
     private StorageReference storageReference;
-    private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firebaseFirestore;
 
-    private String currentUser_id;
+    private String mStudentId;
+    private String mPhoneNum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
 
+        mStudentId = getIntent().getStringExtra(EXTRA_ID);
+        mPhoneNum = getIntent().getStringExtra(EXTRA_PHONE);
+
         firebaseFirestore = FirebaseFirestore.getInstance();
-        firebaseAuth = FirebaseAuth.getInstance();
 
         storageReference = FirebaseStorage.getInstance().getReference();
 
         mSetup_Save = findViewById(R.id.save_changes);
         mFullname = findViewById(R.id.fullname);
         mNationId = findViewById(R.id.nationalid);
-        mStudentId = findViewById(R.id.student_id);
         mPassword = findViewById(R.id.password);
         mAddress = findViewById(R.id.address);
         mGender = findViewById(R.id.gender);
@@ -89,83 +93,74 @@ public class SetupActivity extends AppCompatActivity {
                 final String national = mNationId.getText().toString().trim();
                 final String password = mPassword.getText().toString().trim();
                 final String address = mAddress.getText().toString().trim();
-                final String studentid = mStudentId.getText().toString().trim();
                 int radioId = mGender.getCheckedRadioButtonId();
                 radioButton = findViewById(radioId);
 
                 if (!TextUtils.isEmpty(fullname) && !TextUtils.isEmpty(national)
-                        && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(address) && !TextUtils.isEmpty(studentid) && mainImageUrl != null) {
+                        && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(address) && mainImageUrl != null) {
 
                     mSetprogress.setVisibility(View.VISIBLE);
 
-                    firebaseFirestore.collection("StudentIDs").document(studentid).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    StorageReference image_path = storageReference.child("profile_image").child(mStudentId + ".jpg");
+                    image_path.putFile(mainImageUrl).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
                             if (task.isSuccessful()) {
 
-                                if (task.getResult().exists()) {
+                                final Uri download_uri = task.getResult().getDownloadUrl();
 
-                                    final String user_id = firebaseAuth.getCurrentUser().getUid();
+                                Map<String, String> userMap = new HashMap<>();
+                                userMap.put("Fullname", fullname);
+                                userMap.put("Gender", radioButton.getText().toString());
+                                userMap.put("National", national);
+                                userMap.put("StudentId", mStudentId);
+                                userMap.put("Password", password);
+                                userMap.put("Address", address);
+                                userMap.put("Phone", mPhoneNum);
+                                userMap.put("Images", download_uri.toString());
 
-                                    StorageReference image_path = storageReference.child("profile_image").child(user_id + ".jpg");
-                                    image_path.putFile(mainImageUrl).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                firebaseFirestore.collection("Users").document(mStudentId).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
 
-                                            if (task.isSuccessful()) {
+                                        if (task.isSuccessful()) {
+                                            //Saving student id for later use
+                                            SharedPreferences.Editor editor = getSharedPreferences("USER_ID", Context.MODE_PRIVATE).edit();
+                                            editor.putString(EXTRA_ID, mStudentId);
+                                            editor.apply();
 
-                                                Uri download_uri = task.getResult().getDownloadUrl();
+                                            User user = new User();
+                                            user.setName(fullname);
+                                            user.setAddress(address);
+                                            user.setImagePath(download_uri.toString());
+                                            user.setGender(radioButton.getText().toString());
+                                            user.setNationalId(national);
 
-                                                Map<String, String> userMap = new HashMap<>();
-                                                userMap.put("Fullname", fullname);
-                                                userMap.put("Gender", radioButton.getText().toString());
-                                                userMap.put("National", national);
-                                                userMap.put("StudentId", studentid);
-                                                userMap.put("Password", password);
-                                                userMap.put("Address", address);
-                                                userMap.put("Images", download_uri.toString());
+                                            Toast.makeText(SetupActivity.this, "User Successfully Created", Toast.LENGTH_LONG).show();
+                                            Intent main = new Intent(SetupActivity.this, MainActivity.class);
+                                            main.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            main.putExtra(MainActivity.EXTRA_USER_INFO, user);
+                                            startActivity(main);
+                                            finish();
 
-                                                firebaseFirestore.collection("Users").document(user_id).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-
-                                                        if (task.isSuccessful()) {
-
-                                                            Toast.makeText(SetupActivity.this, "User Successfully Created", Toast.LENGTH_LONG).show();
-                                                            Intent main = new Intent(SetupActivity.this, MainActivity.class);
-                                                            startActivity(main);
-
-                                                        } else {
-                                                            mSetprogress.setVisibility(View.INVISIBLE);
-                                                            String errorimage = task.getException().getMessage();
-                                                            Toast.makeText(SetupActivity.this, "FireStore Error" + errorimage, Toast.LENGTH_LONG).show();
-                                                        }
-
-                                                    }
-                                                });
-
-//                                                Toast.makeText(SetupActivity.this, "Image is successfully uploaded", Toast.LENGTH_SHORT).show();
-
-                                            } else {
-                                                mSetprogress.setVisibility(View.INVISIBLE);
-                                                String error = task.getException().getMessage();
-                                                Toast.makeText(SetupActivity.this, "Image Upload Error " + error, Toast.LENGTH_LONG).show();
-                                            }
+                                        } else {
+                                            mSetprogress.setVisibility(View.INVISIBLE);
+                                            String errorimage = task.getException().getMessage();
+                                            Toast.makeText(SetupActivity.this, "FireStore Error" + errorimage, Toast.LENGTH_LONG).show();
                                         }
-                                    });
 
-                                } else {
-                                    mSetprogress.setVisibility(View.INVISIBLE);
-                                    Toast.makeText(SetupActivity.this, "Your student ID is not enlisted in our database, you cannot proceed further!", Toast.LENGTH_LONG).show();
-                                }
+                                    }
+                                });
 
                             } else {
                                 mSetprogress.setVisibility(View.INVISIBLE);
-                                Toast.makeText(SetupActivity.this, "Something went wrong try again!", Toast.LENGTH_SHORT).show();
+                                String error = task.getException().getMessage();
+                                Toast.makeText(SetupActivity.this, "Image Upload Error " + error, Toast.LENGTH_LONG).show();
                             }
                         }
                     });
+
 
                 } else {
                     Toast.makeText(SetupActivity.this, "Select image and all inputs are required", Toast.LENGTH_SHORT).show();
@@ -197,49 +192,6 @@ public class SetupActivity extends AppCompatActivity {
 
     }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-
-        if (currentUser == null) {
-
-            Intent sendlog = new Intent(SetupActivity.this, HomeActivity.class);
-            startActivity(sendlog);
-            finish();
-
-        } else {
-
-            currentUser_id = firebaseAuth.getCurrentUser().getUid();
-            firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-
-                    if (task.isSuccessful()) {
-
-                        if (task.getResult().exists()) {
-
-                            Intent AccountSeeting = new Intent(SetupActivity.this, MainActivity.class);
-                            startActivity(AccountSeeting);
-                            finish();
-                        }
-                    } else {
-
-
-                        String errormsg = task.getException().getMessage();
-                        Toast.makeText(SetupActivity.this, "" + errormsg, Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-            });
-        }
-
-
-    }
-
-
     private void cropImage() {
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
@@ -258,7 +210,7 @@ public class SetupActivity extends AppCompatActivity {
                 mainImageUrl = result.getUri();
                 mSelect_image.setImageURI(mainImageUrl);
 
-            } else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
 
                 Exception error = result.getError();
             }
@@ -268,9 +220,6 @@ public class SetupActivity extends AppCompatActivity {
     public void checkButton(View v) {
 
         int radioId = mGender.getCheckedRadioButtonId();
-
         radioButton = findViewById(radioId);
-
-
     }
 }

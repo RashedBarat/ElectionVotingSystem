@@ -1,16 +1,15 @@
 package com.barat.electionvotingsystem;
 
+import android.content.Context;
 import android.content.Intent;
-import android.nfc.Tag;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,23 +22,21 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.concurrent.TimeUnit;
 
 public class RegisterActivity extends AppCompatActivity {
 
-
     private Button mReg_btn;
-    private Button mLog_btn;
     private EditText mregphonetxt;
-    private EditText mCodeText;
+    private EditText mStudentId;
     private FirebaseAuth mAuth;
     private ProgressBar mRegprocess;
-    private TextView merrortext;
     private TextView mnote;
-    private RelativeLayout mRegpanel;
-    private RelativeLayout mVerifypanel;
     private int btnType = 0;
+    private String verifiedPhoneNum;
 
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
     private String mVerificationId;
@@ -52,68 +49,48 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mLog_btn = findViewById(R.id.reglogbtn);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         mReg_btn = findViewById(R.id.regsubmitebtn);
         mregphonetxt = findViewById(R.id.regphonetxt);
+        mStudentId = findViewById(R.id.student_id);
+
         mRegprocess = findViewById(R.id.regprocessbar);
         mnote = findViewById(R.id.textView2);
-        mRegpanel = findViewById(R.id.regpanel);
-        mVerifypanel = findViewById(R.id.verypanel);
-        mCodeText = findViewById(R.id.mCodetxt);
-
-
-        mLog_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent register = new Intent(RegisterActivity.this, HomeActivity.class);
-                startActivity(register);
-            }
-        });
-
 
         mReg_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                String phonenum = mregphonetxt.getText().toString().trim();
+
                 if (btnType == 0) {
-                    String phonenum = mregphonetxt.getText().toString().trim();
+                    String studentid = mStudentId.getText().toString().trim();
 
-                    if (!phonenum.isEmpty()) {
+                    if (!phonenum.isEmpty() && !studentid.isEmpty()) {
                         mRegprocess.setVisibility(View.VISIBLE);
-
-                        mregphonetxt.setEnabled(false);
                         mReg_btn.setEnabled(false);
+                        mregphonetxt.setEnabled(false);
+                        mStudentId.setEnabled(false);
 
-                        PhoneAuthProvider.getInstance().verifyPhoneNumber(
-
-                                phonenum,
-
-                                60,
-                                TimeUnit.SECONDS,
-                                RegisterActivity.this,
-                                mCallbacks
-
-                        );
+                        PhoneAuthProvider.getInstance().verifyPhoneNumber(phonenum, 60, TimeUnit.SECONDS,
+                                RegisterActivity.this, mCallbacks);
 
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Please enter a valid number!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Please enter all info!", Toast.LENGTH_SHORT).show();
                     }
 
                 } else {
-                    String verification = mCodeText.getText().toString().trim();
-
-                    if (!verification.isEmpty()) {
+                    if (!phonenum.isEmpty()) {
                         mReg_btn.setEnabled(false);
-                        mVerifypanel.setVisibility(View.VISIBLE);
 
-                        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, verification);
+                        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, phonenum);
                         signInWithPhoneAuthCredential(credential);
 
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Please enter a valid OTP!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Please enter OTP!", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -132,6 +109,7 @@ public class RegisterActivity extends AppCompatActivity {
                 //merrortext.setText("Invalid Verification code enter");
                 mRegprocess.setVisibility(View.INVISIBLE);
                 mregphonetxt.setEnabled(true);
+                mStudentId.setEnabled(true);
                 mReg_btn.setEnabled(true);
                 Toast.makeText(RegisterActivity.this, "Invalid number", Toast.LENGTH_LONG).show();
             }
@@ -150,20 +128,17 @@ public class RegisterActivity extends AppCompatActivity {
                 mResendToken = token;
                 btnType = 1;
 
-                mRegprocess.setVisibility(View.INVISIBLE);
+//                mRegprocess.setVisibility(View.INVISIBLE);
                 mReg_btn.setText("Verify");
                 mReg_btn.setEnabled(true);
-                mRegpanel.setVisibility(View.INVISIBLE);
+                mStudentId.setVisibility(View.INVISIBLE);
                 mnote.setVisibility(View.INVISIBLE);
-                mVerifypanel.setVisibility(View.VISIBLE);
 
-                /*Intent otpactivity = new Intent(RegisterActivity.this, OTPVerifyActivity.class);
-                startActivity(otpactivity);
-                finish();*/
+                verifiedPhoneNum = mregphonetxt.getText().toString();
+                mregphonetxt.setText("");
+                mregphonetxt.setHint(getString(R.string.otpverify));
 
             }
-
-
         };
     }
 
@@ -176,12 +151,83 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
 
-                            FirebaseUser user = task.getResult().getUser();
+                            FirebaseFirestore.getInstance().collection("Users").document(mStudentId.getText().toString()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                            Intent setupactivity = new Intent(RegisterActivity.this, SetupActivity.class);
-                            startActivity(setupactivity);
-                            finish();
-                            // ...
+                                    if (task.isSuccessful()) {
+
+                                        if (task.getResult().exists()) {
+
+                                            if (task.getResult().getString("Phone").equals(verifiedPhoneNum)) {
+                                                //Saving student id for later use
+                                                SharedPreferences.Editor editor = getSharedPreferences("USER_ID", Context.MODE_PRIVATE).edit();
+                                                editor.putString(SetupActivity.EXTRA_ID, mStudentId.getText().toString());
+                                                editor.apply();
+
+                                                String name = task.getResult().getString("Fullname");
+                                                String address = task.getResult().getString("Address");
+                                                String gender = task.getResult().getString("Gender");
+                                                String nationalId = task.getResult().getString("National");
+                                                String profile_image = task.getResult().getString("Images");
+
+                                                User user = new User();
+                                                user.setStudentId(mStudentId.getText().toString());
+                                                user.setName(name);
+                                                user.setAddress(address);
+                                                user.setImagePath(profile_image);
+                                                user.setGender(gender);
+                                                user.setNationalId(nationalId);
+
+                                                Intent main = new Intent(RegisterActivity.this, MainActivity.class);
+                                                main.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                main.putExtra(MainActivity.EXTRA_USER_INFO, user);
+                                                startActivity(main);
+
+                                            } else {
+                                                Toast.makeText(RegisterActivity.this, "This student ID is already registered!", Toast.LENGTH_LONG).show();
+                                                finish();
+                                            }
+
+                                        } else {
+
+                                            FirebaseFirestore.getInstance().collection("StudentIDs").document(mStudentId.getText().toString()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                                                    if (task.isSuccessful()) {
+                                                        if (task.getResult().exists()) {
+
+                                                            Intent setupactivity = new Intent(RegisterActivity.this, SetupActivity.class);
+                                                            setupactivity.putExtra(SetupActivity.EXTRA_ID, mStudentId.getText().toString());
+                                                            setupactivity.putExtra(SetupActivity.EXTRA_PHONE, verifiedPhoneNum);
+                                                            startActivity(setupactivity);
+
+                                                        } else {
+
+                                                            Toast.makeText(RegisterActivity.this, "Your student ID is not enlisted in our database, you cannot proceed further!", Toast.LENGTH_LONG).show();
+                                                            finish();
+                                                        }
+
+                                                    } else {
+                                                        Toast.makeText(RegisterActivity.this, "Something went wrong try again!", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                            });
+
+                                        }
+
+                                        finish();
+
+                                    } else {
+                                        String errormsg = task.getException().getMessage();
+                                        Toast.makeText(RegisterActivity.this, "" + errormsg, Toast.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            });
+
+
                         } else {
                             // Sign in failed, display a message and update the UI
                             mRegprocess.setVisibility(View.INVISIBLE);

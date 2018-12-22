@@ -30,6 +30,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String EXTRA_USER_INFO = "EXTRA_USER_INFO";
 
     private Button mVoteauthbtn;
     private TextView fullname;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private CircleImageView mprofile_image;
     private Uri mainImageUrl = null;
 
-    private String currentUser_id;
+    private String mStudentId;
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebaseFirestore;
 
@@ -59,70 +60,36 @@ public class MainActivity extends AppCompatActivity {
         mCreateCand = (ImageView) findViewById(R.id.create);
 
         firebaseFirestore = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
-
-        currentUser_id = mAuth.getCurrentUser().getUid();
-
 
         fullname = findViewById(R.id.ufullname);
         address = findViewById(R.id.uaddress);
         gender = findViewById(R.id.ugender);
         mprofile_image = findViewById(R.id.profile_image);
 
+        User user = getIntent().getParcelableExtra(EXTRA_USER_INFO);
+        String fullnames = user.getName();
+        String addresss = user.getAddress();
+        String genders = user.getGender();
+        String national = user.getNationalId();
+        String profile_images = user.getImagePath();
 
-        mCreateCand.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        if (national.equals("testadmin")) {
 
-                Intent create = new Intent(MainActivity.this, Create_CandidateActivity.class);
-                startActivity(create);
-            }
-        });
+            mCreateCand.setVisibility(View.VISIBLE);
+        } else {
 
+            mCreateCand.setVisibility(View.GONE);
 
-        firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+        }
+        address.setText(addresss);
+        fullname.setText(fullnames);
+        gender.setText(genders);
+        mainImageUrl = Uri.parse(profile_images);
 
-                if (task.isSuccessful()) {
-
-                    if (task.getResult().exists()) {
-
-                        String fullnames = task.getResult().getString("Fullname");
-                        String addresss = task.getResult().getString("Address");
-                        String genders = task.getResult().getString("Gender");
-                        String national = task.getResult().getString("National");
-                        String profile_images = task.getResult().getString("Images");
-
-                        if (national.equals("testadmin")) {
-
-                            mCreateCand.setVisibility(View.VISIBLE);
-                        } else {
-
-                            mCreateCand.setVisibility(View.GONE);
-
-                        }
-                        address.setText(addresss);
-                        fullname.setText(fullnames);
-                        gender.setText(genders);
-                        mainImageUrl = Uri.parse(profile_images);
-
-                        RequestOptions placeholderimg = new RequestOptions();
-                        placeholderimg.placeholder(R.drawable.profile);
-                        Glide.with(MainActivity.this).setDefaultRequestOptions(placeholderimg).load(profile_images).into(mprofile_image);
-
-                    } else {
-                        // Toast.makeText(MainActivity.this, "Data does not exit", Toast.LENGTH_SHORT).show();
-                    }
-
-                } else {
-
-                    String error = task.getException().getMessage();
-                    Toast.makeText(MainActivity.this, "Retriving Error" + error, Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        RequestOptions placeholderimg = new RequestOptions();
+        placeholderimg.placeholder(R.drawable.profile);
+        Glide.with(MainActivity.this).setDefaultRequestOptions(placeholderimg).load(profile_images).into(mprofile_image);
 
 
         mVoteauthbtn.setOnClickListener(new View.OnClickListener() {
@@ -132,51 +99,16 @@ public class MainActivity extends AppCompatActivity {
                 Intent register = new Intent(MainActivity.this, AuthActivity.class);
                 startActivity(register);
 
-
             }
         });
 
+        mCreateCand.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (currentUser == null) {
-
-            Intent sendlog = new Intent(MainActivity.this, HomeActivity.class);
-            startActivity(sendlog);
-            finish();
-
-        } else {
-
-            currentUser_id = mAuth.getCurrentUser().getUid();
-            firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-
-                    if (task.isSuccessful()) {
-
-                        if (!task.getResult().exists()) {
-
-                            Intent AccountSeeting = new Intent(MainActivity.this, SetupActivity.class);
-                            startActivity(AccountSeeting);
-                            finish();
-                        }
-                    } else {
-
-
-                        String errormsg = task.getException().getMessage();
-                        Toast.makeText(MainActivity.this, "" + errormsg, Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-            });
-        }
-
-
+                Intent create = new Intent(MainActivity.this, Create_CandidateActivity.class);
+                startActivity(create);
+            }
+        });
     }
 }
