@@ -41,7 +41,7 @@ public class AuthActivity extends AppCompatActivity {
     private TextView mStudentId;
     private TextView mPassword;
 
-    private String currentUser_id;
+    private String studentId;
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebaseFirestore;
 
@@ -56,6 +56,7 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
 
+        studentId = getSharedPreferences("USER_ID", MODE_PRIVATE).getString(SetupActivity.EXTRA_ID, "");
 
         mAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
@@ -68,8 +69,6 @@ public class AuthActivity extends AppCompatActivity {
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-
-        currentUser_id = mAuth.getCurrentUser().getUid();
 
         mNationalId = findViewById(R.id.national_id);
         mStudentId = findViewById(R.id.student_id);
@@ -130,7 +129,7 @@ public class AuthActivity extends AppCompatActivity {
                 if (!password.isEmpty() && !nationalid.isEmpty() && !studentid.isEmpty()) {
                     mProgressBar.setVisibility(View.VISIBLE);
 
-                    firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    firebaseFirestore.collection("Users").document(studentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 

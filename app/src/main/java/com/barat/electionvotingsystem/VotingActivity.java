@@ -50,7 +50,8 @@ public class VotingActivity extends AppCompatActivity {
     private Button mcastvotebtn;
     private ProgressDialog mProgress;
 
-    private String user_id;
+    private String studentId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +59,9 @@ public class VotingActivity extends AppCompatActivity {
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         mcandName = findViewById(R.id.candName);
@@ -69,7 +72,7 @@ public class VotingActivity extends AppCompatActivity {
         mcastvotebtn = findViewById(R.id.castvotebtn);
 
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
-        user_id = mCurrentUser.getUid();
+        studentId = getSharedPreferences("USER_ID", MODE_PRIVATE).getString(SetupActivity.EXTRA_ID, "");
 
         if (getIntent().hasExtra("CandId") && getIntent().hasExtra("CandName") && getIntent().hasExtra("CandPost") && getIntent().hasExtra("PartyName") && getIntent().hasExtra("CandSpeech") && getIntent().hasExtra("CandImage")) {
 
@@ -88,9 +91,7 @@ public class VotingActivity extends AppCompatActivity {
             mcandParty.setText(partyName);
             String CandidateIds = CandId;
 
-
-
-            firebaseFirestore.collection("Users").document(user_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            firebaseFirestore.collection("Users").document(studentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
@@ -104,20 +105,20 @@ public class VotingActivity extends AppCompatActivity {
 
                                 vote();
 
-                            }else if (usercandvt.equals(getIntent().getStringExtra("CandPost") )){
+                            } else if (usercandvt.equals(getIntent().getStringExtra("CandPost"))) {
 
                                 mcastvotebtn.setVisibility(View.INVISIBLE);
 
                             }
                         }
 
-                        }
+                    }
 
                 }
             });
 
 
-        }else {
+        } else {
 
             Toast.makeText(VotingActivity.this, "You don't have right to be here", Toast.LENGTH_SHORT).show();
             Intent HomeInt = new Intent(VotingActivity.this, HomeActivity.class);
@@ -127,11 +128,10 @@ public class VotingActivity extends AppCompatActivity {
         }
 
 
-
         //Toast.makeText(VotingActivity.this, ""+getDeviceIP(), Toast.LENGTH_SHORT).show();
     }
 
-    private void vote(){
+    private void vote() {
 
         mcastvotebtn.setVisibility(View.VISIBLE);
 
@@ -149,7 +149,7 @@ public class VotingActivity extends AppCompatActivity {
                 Map<String, Object> voteuserMap = new HashMap<>();
                 voteuserMap.put("" + mcandPost.getText(), mcandPost.getText());
                 voteuserMap.put("deviceIp", getDeviceIP());
-                voteuserMap.put(""+mcandPost.getText(),getIntent().getStringExtra("CandId"));
+                voteuserMap.put("" + mcandPost.getText(), getIntent().getStringExtra("CandId"));
 
 
                 Map<String, Object> voteMap = new HashMap<>();
@@ -158,10 +158,10 @@ public class VotingActivity extends AppCompatActivity {
                 voteMap.put("timestamp", FieldValue.serverTimestamp());
 
                 // firebaseFirestore.collection("Users").document(user_id).collection("Activities").document("Votes").update(voteuserMap);
-                firebaseFirestore.collection("Users").document(user_id).update(voteuserMap);
+                firebaseFirestore.collection("Users").document(studentId).update(voteuserMap);
 
 
-                firebaseFirestore.collection("Candidates/" + getIntent().getStringExtra("CandId") + "/Votes").document(user_id).set(voteMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                firebaseFirestore.collection("Candidates/" + getIntent().getStringExtra("CandId") + "/Votes").document(studentId).set(voteMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
 
@@ -190,19 +190,19 @@ public class VotingActivity extends AppCompatActivity {
         });
     }
 
-    private String getDeviceIP(){
+    private String getDeviceIP() {
 
-        try{
+        try {
 
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();){
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
 
                 NetworkInterface inf = en.nextElement();
 
-                for (Enumeration<InetAddress> enumIpAddr = inf.getInetAddresses(); enumIpAddr.hasMoreElements();){
+                for (Enumeration<InetAddress> enumIpAddr = inf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
 
                     InetAddress inetAddress = enumIpAddr.nextElement();
 
-                    if (!inetAddress.isLoopbackAddress()){
+                    if (!inetAddress.isLoopbackAddress()) {
 
                         return inetAddress.getHostAddress().toString();
 
@@ -210,9 +210,9 @@ public class VotingActivity extends AppCompatActivity {
                 }
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
 
-            Toast.makeText(VotingActivity.this, ""+e, Toast.LENGTH_SHORT).show();
+            Toast.makeText(VotingActivity.this, "" + e, Toast.LENGTH_SHORT).show();
 
         }
         return null;

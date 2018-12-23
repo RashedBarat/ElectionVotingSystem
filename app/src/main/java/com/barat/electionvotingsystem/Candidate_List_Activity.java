@@ -25,7 +25,7 @@ public class Candidate_List_Activity extends AppCompatActivity {
     private Button mVotefinish;
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebaseFirestore;
-    private String currentUser_id;
+    private String studentId;
     private ProgressDialog mProgress;
 
     @Override
@@ -43,12 +43,11 @@ public class Candidate_List_Activity extends AppCompatActivity {
         firebaseFirestore = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        currentUser_id = mAuth.getCurrentUser().getUid();
-
+        studentId = getSharedPreferences("USER_ID", MODE_PRIVATE).getString(SetupActivity.EXTRA_ID, "");
 
         mVotefinish = findViewById(R.id.votefinish);
 
-        firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        firebaseFirestore.collection("Users").document(studentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
@@ -85,7 +84,7 @@ public class Candidate_List_Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                firebaseFirestore.collection("Users").document(currentUser_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                firebaseFirestore.collection("Users").document(studentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
@@ -98,7 +97,7 @@ public class Candidate_List_Activity extends AppCompatActivity {
                                 Map<String, Object> voteMap = new HashMap<>();
                                 voteMap.put("Finish", finish);
 
-                                firebaseFirestore.collection("Users").document(currentUser_id).update(voteMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                firebaseFirestore.collection("Users").document(studentId).update(voteMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
 
