@@ -120,10 +120,10 @@
         android:layout_width="147dp"
         android:layout_height="122dp"
         android:scaleType="fitCenter"
+        android:src="@mipmap/ic_launcher"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.609"
-        app:srcCompat="@drawable/images" />
+        app:layout_constraintVertical_bias="0.609" />
 
 </android.support.constraint.ConstraintLayout>

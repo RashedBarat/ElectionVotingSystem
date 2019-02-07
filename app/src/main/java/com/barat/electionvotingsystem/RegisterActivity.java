@@ -137,6 +137,7 @@ public class RegisterActivity extends AppCompatActivity {
                 verifiedPhoneNum = mregphonetxt.getText().toString();
                 mregphonetxt.setText("");
                 mregphonetxt.setHint(getString(R.string.otpverify));
+                mregphonetxt.setEnabled(true);
 
             }
         };
